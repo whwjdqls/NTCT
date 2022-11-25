@@ -16,9 +16,6 @@ Dataset 준비
 이거 git clone해서 다운받은 후 써있는거처럼 command 입력하면 자동으로 다운 받아짐
 
 
-AdaIN 사용한건 아니지만 fast neural style transfer pytorch 구현한 github
+AdaIN 구현한 github
 
-https://github.com/rrmina/fast-neural-style-pytorch
-이게 우리가 하려는것과 다른 점은 style을 미리 학습해야만 적용 가능하다? 아마도?
-
-https://github.com/naoto0804/pytorch-AdaIN 여기 code 
+https://github.com/naoto0804/pytorch-AdaIN 
