@@ -10,7 +10,7 @@ from torchvision.utils import save_image
 import net
 from function import adaptive_instance_normalization, coral
 
-
+# size, crop, tensor 변환
 def test_transform(size, crop):
     transform_list = []
     if size != 0:
@@ -56,11 +56,18 @@ parser.add_argument('--vgg', type=str, default='models/vgg_normalised.pth')
 parser.add_argument('--decoder', type=str, default='models/decoder.pth')
 
 # Additional options
+parser.add_argument('--color', type=str,
+                    help='File path to the color image')
+parser.add_argument('--color_dir', type=str,
+                    help='Directory path to a batch of color images')
 parser.add_argument('--content_size', type=int, default=512,
                     help='New (minimum) size for the content image, \
                     keeping the original size if set to 0')
 parser.add_argument('--style_size', type=int, default=512,
                     help='New (minimum) size for the style image, \
+                    keeping the original size if set to 0')
+parser.add_argument('--color_size', type=int, default=0,
+                    help='New (minimum) size for the color image, \
                     keeping the original size if set to 0')
 parser.add_argument('--crop', action='store_true',
                     help='do center crop to create squared image')
@@ -72,6 +79,8 @@ parser.add_argument('--output', type=str, default='output',
 # Advanced options
 parser.add_argument('--preserve_color', action='store_true',
                     help='If specified, preserve color of the content image')
+parser.add_argument('--transfer_color', action='store_true',
+                    help='If specified, transfer color of the content image according to color image')
 parser.add_argument('--alpha', type=float, default=1.0,
                     help='The weight that controls the degree of \
                              stylization. Should be between 0 and 1')
@@ -112,6 +121,7 @@ else:
     style_dir = Path(args.style_dir)
     style_paths = [f for f in style_dir.glob('*')]
 
+
 decoder = net.decoder
 vgg = net.vgg
 
@@ -127,6 +137,16 @@ decoder.to(device)
 
 content_tf = test_transform(args.content_size, args.crop)
 style_tf = test_transform(args.style_size, args.crop)
+
+if args.transfer_color:
+    assert (args.color or args.color_dir)
+    if args.color:
+        color_paths = [Path(args.color)]
+    else:
+        color_dir = Path(args.color_dir)
+        color_paths = [f for f in color_dir.glob('*')]
+    color_tf = test_transform(args.color_size, args.crop)
+    
 
 for content_path in content_paths:
     if do_interpolation:  # one content image, N style image
@@ -145,17 +165,35 @@ for content_path in content_paths:
 
     else:  # process one content and one style
         for style_path in style_paths:
-            content = content_tf(Image.open(str(content_path)))
-            style = style_tf(Image.open(str(style_path)))
-            if args.preserve_color:
-                style = coral(style, content)
-            style = style.to(device).unsqueeze(0)
-            content = content.to(device).unsqueeze(0)
-            with torch.no_grad():
-                output = style_transfer(vgg, decoder, content, style,
-                                        args.alpha)
-            output = output.cpu()
+            if args.transfer_color: # process one content, one style, one color
+                for color_path in color_paths:
+                    content = content_tf(Image.open(str(content_path)))
+                    style = style_tf(Image.open(str(style_path)))
+                    color = color_tf(Image.open(str(color_path)))
+                    style = coral(style, color)
+                    style = style.to(device).unsqueeze(0)
+                    content = content.to(device).unsqueeze(0)
+                    with torch.no_grad():
+                        output = style_transfer(vgg, decoder, content, style,
+                                                args.alpha)
+                    output = output.cpu()
 
-            output_name = output_dir / '{:s}_stylized_{:s}{:s}'.format(
-                content_path.stem, style_path.stem, args.save_ext)
-            save_image(output, str(output_name))
+                    output_name = output_dir / '{:s}_stylized_{:s}_colored_{:s}{:s}'.format(
+                        content_path.stem, style_path.stem, color_path.stem, args.save_ext)
+                    save_image(output, str(output_name))
+
+            else: # no color image
+                content = content_tf(Image.open(str(content_path)))
+                style = style_tf(Image.open(str(style_path)))
+                if args.preserve_color:  # preserving color
+                    style = coral(style, content)
+                style = style.to(device).unsqueeze(0)
+                content = content.to(device).unsqueeze(0)
+                with torch.no_grad():
+                    output = style_transfer(vgg, decoder, content, style,
+                                            args.alpha)
+                output = output.cpu()
+
+                output_name = output_dir / '{:s}_stylized_{:s}{:s}'.format(
+                    content_path.stem, style_path.stem, args.save_ext)
+                save_image(output, str(output_name))
