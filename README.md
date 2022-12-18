@@ -19,3 +19,17 @@ Dataset 준비
 AdaIN 구현한 github
 
 https://github.com/naoto0804/pytorch-AdaIN 
+
+구현 모델 모양
+모델1:
+![Untitled (2)](https://user-images.githubusercontent.com/99951369/208286487-fd00946a-ce5d-42ec-babd-e3fe7af53c96.png)
+
+모델2:
+![Untitled](https://user-images.githubusercontent.com/99951369/208286441-7afaa60c-e071-45a2-a5fa-df5ccfaaaecb.png)
+
+모델3:
+![Untitled (1)](https://user-images.githubusercontent.com/99951369/208286479-236b689e-f078-488c-b802-c30ac99deb69.png)
+
+
+대략적인 실험결과
+3번이 그나마 
