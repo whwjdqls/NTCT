@@ -21,15 +21,22 @@ AdaIN 구현한 github
 https://github.com/naoto0804/pytorch-AdaIN 
 
 구현 모델 모양
-모델1:
+
+- 모델1:
 ![Untitled (2)](https://user-images.githubusercontent.com/99951369/208286487-fd00946a-ce5d-42ec-babd-e3fe7af53c96.png)
 
-모델2:
+- 모델2:
 ![Untitled](https://user-images.githubusercontent.com/99951369/208286441-7afaa60c-e071-45a2-a5fa-df5ccfaaaecb.png)
 
-모델3:
+- 모델3:
 ![Untitled (1)](https://user-images.githubusercontent.com/99951369/208286479-236b689e-f078-488c-b802-c30ac99deb69.png)
+
+3번은 모델 2가지로 학습해봄
+3_1: 기존 decoder 동일
+3_2: 기존 decoder의 upsampling 방식을 linear에서 bilinear로, relu에서 leakyrelu로 바꿈
+
 
 
 대략적인 실험결과
-3번이 그나마 
+
+3번이 괜찮지만 color histogram보다는 좋은지는 
